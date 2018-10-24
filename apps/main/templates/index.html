@@ -1,0 +1,157 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block head %}
+
+  <meta name="viewport" content="initial-scale=1.0, user-scalable=no">
+  <meta charset="utf-8">
+
+  <!-- D3 -->
+  <script src="https://d3js.org/d3.v5.min.js"></script>
+
+  <!-- Data Table -->
+  <script src="https://code.jquery.com/jquery-3.3.1.js"></script>
+  <script src="https://cdn.datatables.net/1.10.19/js/jquery.dataTables.min.js"></script>
+  <script src="https://cdn.datatables.net/1.10.19/js/dataTables.bootstrap4.min.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.1.1/css/bootstrap.css" >
+  <link rel="stylesheet" href="https://cdn.datatables.net/1.10.19/css/dataTables.bootstrap4.min.css">
+
+  <!-- Google Maps API -->
+  <script src="https://maps.googleapis.com/maps/api/js?key={{ view.maps_api_key }}"></script>
+  <style>
+    #map {
+      height: 600px;
+    }
+  </style>
+  <script>
+
+      var map;
+      function initialize() {
+            var mapOptions = {
+              zoom: 14,
+              center: {lat: -33.918609, lng: 151.231493}  // UNSW
+            };
+            map = new google.maps.Map(document.getElementById('map'), mapOptions);
+      }
+      google.maps.event.addDomListener(window, 'load', initialize);
+
+      function constructInfoWindow(node){
+
+        var content = `
+        <p>
+          Name: ${node.name}<br>
+          Location: ${node.location.lat.toFixed(2)}, ${node.location.lng.toFixed(2)}<br>
+          WiFi Access Points: ${node.wifiAccessPoints.length}<br>
+          Devices: ${node.devices.length}<br>
+        `;
+        node.devices.forEach(function(device){
+          content += `\t- ${device.macAddress}<br>`;
+        });
+        content += "</p>";
+        var infowindow = new google.maps.InfoWindow({ content: content });
+        return infowindow;
+      }
+
+      function placeMapMarker(node) {
+        console.log("Node: " + JSON.stringify(node.name));
+        console.log("Located at: " + JSON.stringify(node.location));
+        var marker = new google.maps.Marker({
+          position: node.location,
+          icon: "https://raw.githubusercontent.com/iiiypuk/rpi-icon/master/24.png",
+          map: map
+        });
+
+        var infowindow = constructInfoWindow(node);
+
+        google.maps.event.addListener(marker, 'click', function() {
+          infowindow.open(map, marker);
+        });
+
+      }
+
+  </script>
+
+  <script>
+    // Populate the map with the locations of mesh nodes
+    var api_key = "{{ view.maps_api_key }}";
+    var url = `https://www.googleapis.com/geolocation/v1/geolocate?key=${api_key}`;
+    // console.log(url);
+
+    var nodes = [
+    {% for node in view.nodes %}
+      {
+        "name": "{{ node.name }}",
+        "considerIp": "false",
+        "cellTowers": [],
+        "devices": [
+          {% for device in node.devices %}
+          {
+              "macAddress": "{{ device.mac_address }}"
+          }{% if forloop.counter !=  node.aps|length %},{% endif %}
+          {% endfor %}
+        ],
+
+        "wifiAccessPoints": [
+          {% for ap in node.aps %}
+          {
+            "macAddress": "{{ ap.mac_address }}",
+            "signalStrength": {{ap.signal_strength }},
+            "age": {{ ap.age }},
+          }{% if forloop.counter !=  node.aps|length %},{% endif %}
+          {% endfor %}
+        ]
+      }{% if forloop.counter !=  view.nodes|length %},{% endif %}
+    {% endfor %}
+   ];
+
+   for(var i in nodes){
+     var xhr = new XMLHttpRequest();
+     xhr.open("POST", url, true);
+     xhr.setRequestHeader('Content-Type', 'application/json');
+     xhr.send(JSON.stringify(nodes[i]));
+     // console.log('APs:' + JSON.stringify(nodes[i]));
+     // Get response
+     xhr.onload = function() {
+       var response = JSON.parse(this.responseText);
+       nodes[i]['location'] = response['location'];
+       placeMapMarker(nodes[i]);
+       // console.log("HERE: " + JSON.stringify(nodes[i]));
+     }
+   }
+  </script>
+
+{% endblock %}
+
+{% block content %}
+
+  <div class='container-fluid'>
+    <div class='row'>
+      <div class='col-md-12'>
+        <div id="map"></div>
+      </div>
+      <br>
+      <br>
+      <div class="col-md-12">
+        <ul>
+          {% for node in view.nodes %}
+            <li>
+              {{ node.name }}<br>
+              <ul>
+                Known Devices:
+                {% for device in node.devices %}
+                  <li>{{ device.mac_address }}</li>
+                {% endfor %}
+              </ul>
+              <br>
+              <ul>
+                Known Access Points:
+                {% for ap in node.aps %}
+                  <li>{{ ap.ssid }} | {{ ap.mac_address }}</li>
+                {% endfor %}
+              </ul>
+            </li>
+            <br>
+            <br>
+          {% endfor %}
+        </ul>
+      </div>
+{% endblock %}

@@ -1,0 +1,55 @@
+<table id="example" class="table table-striped table-bordered" style="width:100%">
+  <thead>
+      <tr>
+          <th>Node</th>
+          <th>MAC Address</th>
+          <th>Type</th>
+      </tr>
+  </thead>
+  <tbody>
+      {% for node in view.nodes %}
+      <tr>
+        <th>{{ node.name }} ({{ node.mac_address }})</th>
+        <th></th>
+        <th></th>
+      </tr>
+        {% for device in node.devices %}
+          <tr>
+            <td></td>
+            <td>{{ device.mac_address }}</td>
+            <td>Device</td>
+          </tr>
+        {% endfor %}
+        {% for ap in node.aps %}
+          <tr>
+            <td>{{ ap.ssid }}</td>
+            <td>{{ ap.mac_address }}</td>
+            <td>Access Point</td>
+          </tr>
+        {% endfor %}
+
+      {% endfor %}
+  </tbody>
+  <tfoot>
+      <tr>
+        <th>Node</th>
+        <th>MAC Address</th>
+        <th>Type</th>
+      </tr>
+  </tfoot>
+</table>
+</div>
+
+<div class="col-md-12">
+{% for node in view.nodes %}
+  {{ node.mac_address }}<br>
+{% endfor %}
+</div>
+
+</div>
+</div>
+<script>
+$(document).ready(function() {
+$('#example').DataTable();
+} );
+</script>
