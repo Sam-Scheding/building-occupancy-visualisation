@@ -12,7 +12,7 @@ class DeviceSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Device
-        fields = ['discovered_by', 'mac_address', 'age', 'vendor']
+        fields = ['discovered_by', 'mac_address', 'age', 'vendor', 'time',]
 
 class APSerializer(serializers.ModelSerializer):
 
@@ -25,7 +25,9 @@ class APSerializer(serializers.ModelSerializer):
             'channel',
             'ssid',
             'age',
-            'signal_to_noise_ratio'
+            'signal_to_noise_ratio',
+            'time',
+
         ]
 
 # class TreeSerializer(serializers.ModelSerializer):

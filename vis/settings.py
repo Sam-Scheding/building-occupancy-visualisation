@@ -25,7 +25,7 @@ GOOGLE_MAPS_API_KEY = 'AIzaSyCDRj0MkNJSWelV7K69tkADSEAYmPiUO78'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 PROJECT_NAME = ""
-ALLOWED_HOSTS = ['samscheding1.pythonanywhere.com']
+ALLOWED_HOSTS = ['127.0.0.1', 'samscheding1.pythonanywhere.com']
 
 
 # Application definition
