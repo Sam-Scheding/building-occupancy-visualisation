@@ -27,7 +27,7 @@
       var map;
       function initialize() {
             var mapOptions = {
-              zoom: 14,
+              zoom: 16,
               center: {lat: -33.918609, lng: 151.231493}  // UNSW
             };
             map = new google.maps.Map(document.getElementById('map'), mapOptions);
@@ -76,47 +76,45 @@
     var url = `https://www.googleapis.com/geolocation/v1/geolocate?key=${api_key}`;
     // console.log(url);
 
-    var nodes = [
     {% for node in view.nodes %}
+      var node{{ forloop.counter }} =
       {
         "name": "{{ node.name }}",
         "considerIp": "false",
         "cellTowers": [],
         "devices": [
           {% for device in node.devices %}
-          {
-              "macAddress": "{{ device.mac_address }}"
-          }{% if forloop.counter !=  node.aps|length %},{% endif %}
-          {% endfor %}
+          { "macAddress": "{{ device.mac_address }}" }, {% endfor %}
         ],
 
         "wifiAccessPoints": [
           {% for ap in node.aps %}
           {
             "macAddress": "{{ ap.mac_address }}",
-            "signalStrength": {{ap.signal_strength }},
+            "signalStrength": {{ ap.signal_strength }},
             "age": {{ ap.age }},
-          }{% if forloop.counter !=  node.aps|length %},{% endif %}
-          {% endfor %}
+          }, {% endfor %}
         ]
-      }{% if forloop.counter !=  view.nodes|length %},{% endif %}
-    {% endfor %}
-   ];
+      };
+      var xhr = new XMLHttpRequest();
+      xhr.open("POST", url, true);
+      xhr.setRequestHeader('Content-Type', 'application/json');
+      xhr.send(JSON.stringify(node{{ forloop.counter }}));
+      // console.log('APs:' + JSON.stringify(nodes[i]));
+      // Get response
+      xhr.onload = function() {
+        var response = JSON.parse(this.responseText);
 
-   for(var i in nodes){
-     var xhr = new XMLHttpRequest();
-     xhr.open("POST", url, true);
-     xhr.setRequestHeader('Content-Type', 'application/json');
-     xhr.send(JSON.stringify(nodes[i]));
-     // console.log('APs:' + JSON.stringify(nodes[i]));
-     // Get response
-     xhr.onload = function() {
-       var response = JSON.parse(this.responseText);
-       nodes[i]['location'] = response['location'];
-       placeMapMarker(nodes[i]);
-       // console.log("HERE: " + JSON.stringify(nodes[i]));
-     }
-   }
+        if(response['location'] != undefined){
+          node{{ forloop.counter }}['location'] = response['location'];
+          placeMapMarker(node{{ forloop.counter }});
+        }
+        // console.log("HERE: " + JSON.stringify(nodes[i]));
+      }
+
+    {% endfor %}
+
+
   </script>
 
 {% endblock %}
