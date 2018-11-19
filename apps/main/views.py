@@ -4,6 +4,7 @@ from django.views import generic
 from apps.main.models import Node, Device, AccessPoint
 from apps.core import views
 from django.conf import settings
+from django.db.models import Max, Min, Count
 
 class HomeView(generic.TemplateView, views.BaseView):
 
@@ -19,10 +20,26 @@ class HomeView(generic.TemplateView, views.BaseView):
         in a single DB query
     """
     def nodes(self):
-        nodes = Node.objects.all()
+        nodes = Node.objects.all().order_by('name')
         for node in nodes:
-            node.aps = AccessPoint.objects.filter(discovered_by=node)
-            node.devices = Device.objects.filter(discovered_by=node)
+
+            aps = AccessPoint.objects.filter(discovered_by=node).values_list('mac_address', flat=True).distinct()
+            node.aps = []
+            for mac in aps:
+                detections = AccessPoint.objects.filter(mac_address=mac).order_by('-time')
+                ap = detections.first()
+                ap.detections = len(detections)
+                node.aps += [ap]
+
+
+            devices = Device.objects.filter(discovered_by=node).values_list('mac_address', flat=True).distinct()
+            node.devices = []
+            for mac in devices:
+                detections = Device.objects.filter(mac_address=mac).order_by('-time')
+                device = detections.first()
+                device.detections = len(detections)
+                node.devices += [device]
+
         return nodes
 
     def maps_api_key(self):

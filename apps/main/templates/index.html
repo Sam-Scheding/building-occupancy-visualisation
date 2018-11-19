@@ -130,28 +130,81 @@
       </div>
       <br>
       <br>
-      <div class="col-md-12">
-        <ul>
+      <br>
+      <br>
           {% for node in view.nodes %}
-            <li>
-              {{ node.name }}<br>
-              <ul>
-                Known Devices:
+          <!-- Construct Devices Table -->
+          <div class="col-md-6">
+          <br>
+          <h2>{{ node.name }} Devices</h2>
+          <table id="node{{ forloop.counter }}_devices" class="table table-striped table-bordered" style="width:100%">
+            <thead>
+                <tr>
+                    <th>MAC Address</th>
+                    <th>Detections</th>
+                    <th>Most Recent Detection</th>
+                </tr>
+            </thead>
+            <tbody>
                 {% for device in node.devices %}
-                  <li>{{ device.mac_address }}</li>
+                  <tr>
+                    <td>{{ device.mac_address }}</td>
+                    <td>{{ device.detections }}</td>
+                    <td>{{ device.time }}</td>
+                  </tr>
                 {% endfor %}
-              </ul>
-              <br>
-              <ul>
-                Known Access Points:
-                {% for ap in node.aps %}
-                  <li>{{ ap.ssid }} | {{ ap.mac_address }}</li>
-                {% endfor %}
-              </ul>
-            </li>
-            <br>
-            <br>
-          {% endfor %}
-        </ul>
+            </tbody>
+            <tfoot>
+                <tr>
+                  <th>MAC Address</th>
+                  <th>Detections</th>
+                  <th>Most Recent Detection</th>
+                </tr>
+            </tfoot>
+          </table>
+        </div>
+        <script>
+          $(document).ready(function() {
+          $('#node{{ forloop.counter }}_devices').DataTable();
+          } );
+        </script>
+
+        <!-- Construct AP Table -->
+        <div class="col-md-6">
+        <br>
+        <h2>{{ node.name }} Access Points</h2>
+        <table id="node{{ forloop.counter }}_aps" class="table table-striped table-bordered" style="width:100%">
+          <thead>
+              <tr>
+                  <th>MAC Address</th>
+                  <th>Detections</th>
+                  <th>Most Recent Detection</th>
+              </tr>
+          </thead>
+          <tbody>
+              {% for ap in node.aps %}
+                <tr>
+                  <td>{{ ap.mac_address }}</td>
+                  <td>{{ ap.detections }}</td>
+                  <td>{{ ap.time }}</td>
+                </tr>
+              {% endfor %}
+          </tbody>
+          <tfoot>
+              <tr>
+                <th>MAC Address</th>
+                <th>Detections</th>
+                <th>Most Recent Detection</th>
+              </tr>
+          </tfoot>
+        </table>
       </div>
+      <script>
+        $(document).ready(function() {
+        $('#node{{ forloop.counter }}_aps').DataTable();
+        } );
+      </script>
+
+          {% endfor %}
+
 {% endblock %}
