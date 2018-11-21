@@ -14,7 +14,11 @@ class HomeView(generic.TemplateView, views.BaseView):
 
     def count_devices(self):
         cutoff_time = datetime.datetime.now() - datetime.timedelta(minutes=3)
-        return len(Device.objects.filter(time__gt=cutoff_time).values('mac_address').distinct())
+        live_devices = Device.objects.filter(time__gt=cutoff_time).values('mac_address')
+        distinct_live_devices = live_devices.distinct()
+        for dev in distinct_live_devices:
+            print(dev)
+        return len(distinct_live_devices)
 
     def nodes(self):
         nodes = Node.objects.all().order_by('name')
