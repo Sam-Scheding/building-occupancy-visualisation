@@ -12,6 +12,9 @@ class HomeView(generic.TemplateView, views.BaseView):
     template_name = 'index.html'
     page_title = "Overview"
 
+    def count_devices(self):
+        return len(Device.objects.order_by().values('mac_address').distinct())
+
     def nodes(self):
         nodes = Node.objects.all().order_by('name')
         for node in nodes:
