@@ -14,8 +14,8 @@ class HomeView(generic.TemplateView, views.BaseView):
 
     def nodes(self):
         nodes = Node.objects.all().order_by('name')
-        cutoff_time = datetime.datetime.now() - datetime.timedelta(minutes=3)
         for node in nodes:
+            cutoff_time = datetime.datetime.now() - datetime.timedelta(hours=1)
 
             aps = AccessPoint.objects.filter(discovered_by=node).values_list('mac_address', flat=True).distinct()
             node.aps = []
@@ -29,6 +29,9 @@ class HomeView(generic.TemplateView, views.BaseView):
 
             devices = Device.objects.filter(discovered_by=node).values_list('mac_address', flat=True).distinct()
             node.devices = []
+
+            cutoff_time = datetime.datetime.now() - datetime.timedelta(minutes=3)
+
             for mac in devices:
                 detections = Device.objects.filter(mac_address=mac, time__gt=cutoff_time).order_by('-time')
                 if detections:

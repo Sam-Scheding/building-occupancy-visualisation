@@ -33,6 +33,8 @@ class AccessPoint(models.Model):
     vendor = models.CharField(max_length=60)
     time = models.DateTimeField(auto_now_add=True)
 
+    def __str__(self):
+        return "{}: {}".format(self.time, self.mac_address)
 """
     Device is a WiFi enabled devices that are used to identify people. The Pi Zeros
     discover new Devices and feed that information to the mesh network sink. The
@@ -48,3 +50,6 @@ class Device(models.Model):
     age = models.IntegerField(default=0)
     vendor = models.CharField(max_length=60, blank=True)
     time = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return "{}: {}".format(self.time, self.mac_address)
