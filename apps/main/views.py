@@ -13,7 +13,8 @@ class HomeView(generic.TemplateView, views.BaseView):
     page_title = "Overview"
 
     def count_devices(self):
-        return len(Device.objects.order_by().values('mac_address').distinct())
+        cutoff_time = datetime.datetime.now() - datetime.timedelta(minutes=3)
+        return len(Device.objects.filter(time__gt=cutoff_time).values('mac_address').distinct())
 
     def nodes(self):
         nodes = Node.objects.all().order_by('name')
