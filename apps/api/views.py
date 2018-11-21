@@ -24,7 +24,7 @@ class APView(mixins.PostListMixin, viewsets.ModelViewSet):
 
         now = datetime.datetime.now()
         ten_minutes_ago = now - datetime.timedelta(minutes=10)
-        devices = Device.objects.order_by('discovered_by', 'time').filter(date__range=(ten_minutes_ago, now))
+        devices = Device.objects.order_by('discovered_by', 'time').filter(time__range=(ten_minutes_ago, now))
         return devices
 
 # /api/device
